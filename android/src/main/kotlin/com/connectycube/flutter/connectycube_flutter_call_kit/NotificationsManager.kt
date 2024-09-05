@@ -27,6 +27,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+
 const val CALL_CHANNEL_ID = "calls_channel_id"
 const val CALL_CHANNEL_NAME = "Calls"
 
@@ -37,26 +38,78 @@ fun cancelCallNotification(context: Context, callId: String) {
 }
 
 fun showCallNotification(
+    
     context: Context, callId: String, callType: Int, callInitiatorId: Int,
-    callInitiatorName: String, callOpponents: ArrayList<Int>, callPhoto: String?, userInfo: String
+    callInitiatorName: String, callOpponents: ArrayList<Int>, callPhoto: String?, userInfo: String,
+    callTimeOut:Int
+
+    
 ) {
     Log.d("NotificationsManager", "[showCallNotification]")
     val notificationManager = NotificationManagerCompat.from(context)
 
-    Log.d(
-        "NotificationsManager",
-        "[showCallNotification] canUseFullScreenIntent: ${notificationManager.canUseFullScreenIntent()}"
+
+
+
+    Log.d("ConnectycubeFlutterCallKitPlugin", "callTimeOut: $callTimeOut")
+
+    
+val newCallData = Bundle()
+    newCallData.putString(EXTRA_CALL_ID, callId)
+    newCallData.putInt(EXTRA_CALL_TYPE, callType)
+    newCallData.putInt(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
+    newCallData.putString(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
+    newCallData.putIntegerArrayList(EXTRA_CALL_OPPONENTS, callOpponents)
+    newCallData.putString(EXTRA_CALL_PHOTO, callPhoto)
+    newCallData.putString(EXTRA_CALL_USER_INFO, userInfo)
+    newCallData.putInt(EXTRA_CALL_TIME_OUT, callTimeOut)
+
+
+
+
+
+
+
+    // val intent = Intent(context, EventReceiver::class.java).apply {
+    //     action = ACTION_CALL_SELECTED
+    //     putExtras(newCallData)
+    // }
+    // val pendingIntent = PendingIntent.getBroadcast(
+    //     context,
+    //     callId.hashCode(),
+    //     intent,
+    //     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) 
+    //         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE 
+    //     else 
+    //         PendingIntent.FLAG_UPDATE_CURRENT
+    // )
+
+
+
+
+
+
+
+    val callFullScreenIntent: Intent = createStartIncomingScreenIntent(
+        context,
+        callId,
+        callType,
+        callInitiatorId,
+        callInitiatorName,
+        callOpponents,
+        callPhoto,
+        userInfo,
+        false
     )
-
-    val intent = getLaunchIntent(context)
-
     val pendingIntent = PendingIntent.getActivity(
+        
         context,
         callId.hashCode(),
-        intent,
+        callFullScreenIntent,
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
-
     )
+    // notificationBuilder.setFullScreenIntent(fullScreenPendingIntent, true)
+
 
     var ringtone: Uri
 
@@ -82,11 +135,13 @@ fun showCallNotification(
     callData.putIntegerArrayList(EXTRA_CALL_OPPONENTS, callOpponents)
     callData.putString(EXTRA_CALL_PHOTO, callPhoto)
     callData.putString(EXTRA_CALL_USER_INFO, userInfo)
-
+    callData.putInt(EXTRA_CALL_TIME_OUT, callTimeOut)
+    Log.d("ConnectycubeFlutterCallKitPlugin", "callTimeOut: $callTimeOut")
     val defaultPhoto = getDefaultPhoto(context)
 
     val builder: NotificationCompat.Builder =
         createCallNotification(
+            callTimeOut,
             context,
             callInitiatorName,
             callTypeTitle,
@@ -195,6 +250,7 @@ fun getLaunchIntent(context: Context): Intent? {
 }
 
 fun createCallNotification(
+    callTimeOut:Int,
     context: Context,
     title: String,
     callName: String?,
@@ -215,27 +271,79 @@ fun createCallNotification(
     )
     style.setIsVideo(isVideoCall)
 
+
+    val  timeOut =  callTimeOut * 1000L;
+    Log.d("ConnectycubeFlutterCallKitPlugin", "callTimeOut: $callTimeOut")
+    Log.d("ConnectycubeFlutterCallKitPlugin", "timeOut: $timeOut")
     val notificationBuilder = NotificationCompat.Builder(context, CALL_CHANNEL_ID)
     notificationBuilder
         .setContentText(callName)
         .setStyle(style)
         .addPerson(person)
         .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-        .setAutoCancel(true)
+        .setAutoCancel(false)
         .setOngoing(true)
         .setCategory(NotificationCompat.CATEGORY_CALL)
         .setContentIntent(pendingIntent)
         .setSound(ringtone)
         .setPriority(NotificationCompat.PRIORITY_MAX)
-        .setTimeoutAfter(60000)
+        .setTimeoutAfter(timeOut)
+        
     return notificationBuilder
 }
+
+
 
 fun getAcceptCallIntent(
     context: Context,
     callData: Bundle,
     requestCode: Int
 ): PendingIntent {
+
+    // val isAppInForeground = (context.applicationContext as MyApp).appLifecycleObserver.isAppInForeground()
+
+
+
+    // Add a log statement to log the action and request code
+//     Log.d("getAcceptCallIntent", "Creating PendingIntent for requestCode: $requestCode with action: $ACTION_CALL_ACCEPT")
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+
+
+
+      val callId= callData.getString(EXTRA_CALL_ID)
+  val callType= callData.getInt(EXTRA_CALL_TYPE)
+  val callInitiatorId= callData.getInt(EXTRA_CALL_INITIATOR_ID)
+  val callInitiatorName= callData.getString(EXTRA_CALL_INITIATOR_NAME)
+  val callOpponents= callData.getIntegerArrayList(EXTRA_CALL_OPPONENTS)
+  val callPhoto= callData.getString(EXTRA_CALL_PHOTO)
+  val userInfo= callData.getString(EXTRA_CALL_USER_INFO)
+//   val callTimeOut= callData.getInt(EXTRA_CALL_TIME_OUT)
+
+
+val callFullScreenIntent: Intent = createStartIncomingScreenIntent(
+        context,
+        callId!!,
+        callType!!,
+        callInitiatorId!!,
+        callInitiatorName!!,
+        callOpponents!!,
+        callPhoto,
+        userInfo!!,
+        true
+    )
+
+
+        return  PendingIntent.getActivity(   
+            context,
+            requestCode,
+            callFullScreenIntent,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
+    
+            )   
+
+} else {
+
+
     return PendingIntent.getBroadcast(
         context,
         requestCode,
@@ -245,12 +353,17 @@ fun getAcceptCallIntent(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
     )
 }
+}
+
 
 fun getRejectCallIntent(
     context: Context,
     callData: Bundle,
     requestCode: Int
 ): PendingIntent {
+    Log.d("getRejectingCallIntent", "Creating PendingIntent for requestCode: $requestCode with action: $ACTION_CALL_ACCEPT")
+
+
     return PendingIntent.getBroadcast(
         context,
         requestCode,
@@ -280,7 +393,8 @@ fun addCallFullScreenIntent(
         callInitiatorName,
         callOpponents,
         callPhoto,
-        userInfo
+        userInfo,
+        false
     )
     val fullScreenPendingIntent = PendingIntent.getActivity(
         context,
@@ -314,7 +428,7 @@ fun createCallNotificationChannel(notificationManager: NotificationManagerCompat
         val channel = NotificationChannel(
             CALL_CHANNEL_ID,
             CALL_CHANNEL_NAME,
-            NotificationManager.IMPORTANCE_HIGH
+            NotificationManager.IMPORTANCE_MAX
         )
         channel.setSound(
             sound, AudioAttributes.Builder()
