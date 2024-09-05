@@ -1,3 +1,4 @@
+
 package com.connectycube.flutter.connectycube_flutter_call_kit
 
 import android.annotation.SuppressLint
@@ -147,6 +148,7 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                     }
 
                     val callType = arguments["call_type"] as Int
+                    val callTimeOut = arguments["time_out"] as Int
                     val callInitiatorId = arguments["caller_id"] as Int
                     val callInitiatorName = arguments["caller_name"] as String
                     val callOpponents = ArrayList((arguments["call_opponents"] as String)
@@ -155,15 +157,19 @@ class ConnectycubeFlutterCallKitPlugin : FlutterPlugin, MethodCallHandler,
                     val callPhoto = arguments["photo_url"] as String?
                     val userInfo = arguments["user_info"] as String
 
+
+                   
+
                     showCallNotification(
-                        applicationContext!!,
-                        callId,
-                        callType,
-                        callInitiatorId,
-                        callInitiatorName,
-                        callOpponents,
-                        callPhoto,
-                        userInfo
+                        context= applicationContext!!,
+                        callId=  callId,
+                        callType=  callType,
+                        callInitiatorId=  callInitiatorId,
+                        callInitiatorName=  callInitiatorName,
+                        callOpponents=  callOpponents,
+                        callPhoto= callPhoto,
+                        userInfo= userInfo,
+                        callTimeOut=callTimeOut ?:30
                     )
 
                     saveCallState(applicationContext, callId, CALL_STATE_PENDING)
