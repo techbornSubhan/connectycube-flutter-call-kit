@@ -14,6 +14,7 @@ class CallEvent {
     required this.callerId,
     required this.callerName,
     required this.opponentsIds,
+    required this.timeOut,
     this.callPhoto,
     this.userInfo,
   });
@@ -22,6 +23,7 @@ class CallEvent {
   final int callType;
   final int callerId;
   final String callerName;
+  final int? timeOut;
   final Set<int> opponentsIds;
   final String? callPhoto;
 
@@ -35,6 +37,7 @@ class CallEvent {
     String? sessionId,
     int? callType,
     int? callerId,
+    int? timeOut,
     String? callerName,
     Set<int>? opponentsIds,
     String? callPhoto,
@@ -45,6 +48,7 @@ class CallEvent {
       callType: callType ?? this.callType,
       callerId: callerId ?? this.callerId,
       callerName: callerName ?? this.callerName,
+      timeOut: timeOut ?? this.timeOut,
       opponentsIds: opponentsIds ?? this.opponentsIds,
       callPhoto: callPhoto ?? this.callPhoto,
       userInfo: userInfo ?? this.userInfo,
@@ -57,6 +61,7 @@ class CallEvent {
       'call_type': callType,
       'caller_id': callerId,
       'caller_name': callerName,
+      'time_out': timeOut,
       'call_opponents': opponentsIds.join(','),
       'photo_url': callPhoto,
       'user_info': jsonEncode(userInfo ?? <String, String>{}),
@@ -68,6 +73,7 @@ class CallEvent {
     return CallEvent(
       sessionId: map['session_id'] as String,
       callType: map['call_type'] as int,
+      timeOut: map['time_out'] as int?,
       callerId: map['caller_id'] as int,
       callerName: map['caller_name'] as String,
       opponentsIds:
@@ -90,6 +96,7 @@ class CallEvent {
         'sessionId: $sessionId, '
         'callType: $callType, '
         'callerId: $callerId, '
+        'timeOut: $timeOut, '
         'callerName: $callerName, '
         'opponentsIds: $opponentsIds, '
         'callPhoto: $callPhoto, '
@@ -104,6 +111,7 @@ class CallEvent {
         other.sessionId == sessionId &&
         other.callType == callType &&
         other.callerId == callerId &&
+        other.timeOut == timeOut &&
         other.callerName == callerName &&
         setEquals(other.opponentsIds, opponentsIds) &&
         other.callPhoto == callPhoto &&
@@ -115,6 +123,7 @@ class CallEvent {
     return sessionId.hashCode ^
         callType.hashCode ^
         callerId.hashCode ^
+        timeOut.hashCode ^
         callerName.hashCode ^
         opponentsIds.hashCode ^
         userInfo.hashCode;
