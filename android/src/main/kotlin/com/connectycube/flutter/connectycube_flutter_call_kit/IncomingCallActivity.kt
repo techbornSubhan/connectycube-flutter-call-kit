@@ -26,7 +26,8 @@ import com.skyfishjy.library.RippleBackground
 
 fun createStartIncomingScreenIntent(
     context: Context, callId: String, callType: Int, callInitiatorId: Int,
-    callInitiatorName: String, opponents: ArrayList<Int>, callPhoto: String?, userInfo: String
+    callInitiatorName: String, opponents: ArrayList<Int>, callPhoto: String?, userInfo: String,
+    isCallAccepted: Boolean?
 ): Intent {
     val intent = Intent(context, IncomingCallActivity::class.java)
     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -37,6 +38,7 @@ fun createStartIncomingScreenIntent(
     intent.putIntegerArrayListExtra(EXTRA_CALL_OPPONENTS, opponents)
     intent.putExtra(EXTRA_CALL_PHOTO, callPhoto)
     intent.putExtra(EXTRA_CALL_USER_INFO, userInfo)
+    intent.putExtra(IS_CALL_ACCEPTED, isCallAccepted) 
     return intent
 }
 
@@ -51,6 +53,7 @@ class IncomingCallActivity : Activity() {
     private var callOpponents: ArrayList<Int>? = ArrayList()
     private var callPhoto: String? = null
     private var callUserInfo: String? = null
+    private var isCallAccepted: Boolean? = false
 
 
     override fun onCreate(@Nullable savedInstanceState: Bundle?) {
@@ -157,6 +160,12 @@ class IncomingCallActivity : Activity() {
         callOpponents = intent.getIntegerArrayListExtra(EXTRA_CALL_OPPONENTS)
         callPhoto = intent.getStringExtra(EXTRA_CALL_PHOTO)
         callUserInfo = intent.getStringExtra(EXTRA_CALL_USER_INFO)
+        isCallAccepted=intent.getBooleanExtra(IS_CALL_ACCEPTED, false)
+        if(isCallAccepted!!){
+            startCall()
+
+        }
+
     }
 
     private fun initUi() {
@@ -236,4 +245,20 @@ class IncomingCallActivity : Activity() {
         startCallIntent.putExtras(bundle)
         applicationContext.sendBroadcast(startCallIntent)
     }
+    fun startCall() {
+        val bundle = Bundle()
+        bundle.putString(EXTRA_CALL_ID, callId)
+        bundle.putInt(EXTRA_CALL_TYPE, callType)
+        bundle.putInt(EXTRA_CALL_INITIATOR_ID, callInitiatorId)
+        bundle.putString(EXTRA_CALL_INITIATOR_NAME, callInitiatorName)
+        bundle.putIntegerArrayList(EXTRA_CALL_OPPONENTS, callOpponents)
+        bundle.putString(EXTRA_CALL_PHOTO, callPhoto)
+        bundle.putString(EXTRA_CALL_USER_INFO, callUserInfo)
+
+        val startCallIntent = Intent(this, EventReceiver::class.java)
+        startCallIntent.action = ACTION_CALL_ACCEPT
+        startCallIntent.putExtras(bundle)
+        applicationContext.sendBroadcast(startCallIntent)
+    }
+
 }
