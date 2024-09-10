@@ -60,8 +60,8 @@ class CallKitController : NSObject {
         }
         
         providerConfiguration.supportsVideo = true
-        providerConfiguration.maximumCallsPerCallGroup = 1
-        providerConfiguration.maximumCallGroups = 1;
+        providerConfiguration.maximumCallsPerCallGroup = 2
+        providerConfiguration.maximumCallGroups = 2;
         providerConfiguration.supportedHandleTypes = [.generic]
         
         if #available(iOS 11.0, *) {
@@ -105,7 +105,7 @@ class CallKitController : NSObject {
         update.hasVideo = callType == 1
         update.supportsGrouping = false
         update.supportsUngrouping = false
-        update.supportsHolding = false
+        update.supportsHolding = true
         update.supportsDTMF = false
         
         if (self.currentCallData["session_id"] == nil || self.currentCallData["session_id"] as! String != uuid) {
@@ -207,7 +207,7 @@ class CallKitController : NSObject {
                     .allowBluetooth,
                     .allowBluetoothA2DP,
                 ])
-            try audioSession.setMode(AVAudioSession.Mode.videoChat)
+            try audioSession.setMode(AVAudioSession.Mode.voiceChat)
             try audioSession.setPreferredSampleRate(44100.0)
             try audioSession.setPreferredIOBufferDuration(0.005)
             try audioSession.setActive(active)
